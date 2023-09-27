@@ -1,0 +1,364 @@
+---
+title: "Alcohol consumption by Portuguese students"
+output: html_notebook
+author: Shiva Kumar Pendem, Sricharan Cheeti, Kaushik Parvathaneni
+---
+```{r}
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+library(corrplot)
+library(plotly)
+library(caTools)
+library(car)
+```
+
+
+```{r}
+Mat = read.csv('studentMat.csv')
+
+```
+
+### Preprocessing
+#### Converting Non numeric to Numeric
+
+```{r }
+non_numeric_columns <- names(Mat)[sapply(Mat, function(col) !is.numeric(col))]
+cat("These are non-numeric columns:", non_numeric_columns, "\n\n")
+
+numeric_columns <- names(Mat)[sapply(Mat, is.numeric)]
+cat("These are numeric columns:", numeric_columns, "\n")
+
+
+```
+We have to convert Non numeric data to numeric data to find the correlation coeff
+
+```{r}
+# Mat$sex <- ifelse(Mat$sex == 'M', 1, 0)
+```
+
+```{r}
+# non_numeric_columns <- c('school', 'address', 'famsize', 'Pstatus', 'Mjob', 'Fjob', 'reason', 'guardian', 'schoolsup', 'famsup', 'paid', 'activities', 'nursery', 'higher', 'internet', 'romantic')
+
+# for(col in non_numeric_columns) {
+#   if(length(unique(Mat[[col]])) == 2) {
+#     # Label Encoding
+#     levels <- unique(Mat[[col]])
+#     Mat[[col]] <- ifelse(Mat[[col]] == levels[1], 1, 0)
+#   } else {
+#     # One-Hot Encoding
+#     Mat <- Mat %>%
+#       mutate(!!col := as.factor(!!sym(col))) %>%
+#       spread(!!col, !!col, fill = 0, convert = TRUE)
+#   }
+# }
+non_numeric <- names(Mat)[sapply(Mat, function(col) !is.numeric(col))]
+
+for (col in non_numeric){
+  print(paste("The column ", col, "has ", length(unique(Mat[[col]])), ' unique values they are: '))
+  print((unique(Mat[[col]])))
+  cat('\n')
+}
+```
+
+```{r Arranging Binary and non binary columns}
+binary_columns <- c()
+multi_unique_columns <- c()
+
+# Loop through each column and categorize based on the number of unique values
+for (col in non_numeric) {
+    num_unique <- length(unique(Mat[[col]]))
+    
+    if (num_unique == 2) {
+        binary_columns <- c(binary_columns, col)
+    } else if (num_unique > 2) {
+        multi_unique_columns <- c(multi_unique_columns, col)
+    }
+}
+# for (col in binary_columns) {
+#   unique_vals <- unique(Mat[[col]])
+#   Mat[[col]] <- ifelse(Mat[[col]] == unique_vals[1], 0, 1)
+# }
+print(paste("Binary columns:", paste(binary_columns, collapse = ", ")))
+cat('\n')
+print(paste("Multi unique value columns:", paste(multi_unique_columns, collapse = ", ")))
+```
+
+
+```{r Turing binary columns numeric}
+
+for (col in binary_columns) {
+  if ("yes" %in% Mat[[col]] && "no" %in% Mat[[col]]) {
+    # If the column has 'yes' and 'no' values
+    Mat[[col]] <- ifelse(Mat[[col]] == "yes", 1, 0)
+  } else {
+    # For other binary columns
+    unique_vals <- unique(Mat[[col]])
+    Mat[[col]] <- ifelse(Mat[[col]] == unique_vals[1], 0, 1)
+    print(paste(unique_vals[1],':0', unique_vals[2],':1'))
+  }
+}
+
+```
+```{r Turing multivalued columns numeric}
+# Perform one-hot encoding for each column in multi_unique_columns
+for (col in multi_unique_columns) {
+  # Create a one-hot encoded matrix for the column
+  formula_str <- paste("~ 0 +", col)
+  one_hot <- model.matrix(as.formula(formula_str), data = Mat)
+  
+  # Convert matrix to data frame and set column names
+  one_hot_df <- as.data.frame(one_hot)
+  colnames(one_hot_df) <- gsub("^.\\.", col, colnames(one_hot_df))
+  
+  # Bind the new one-hot encoded columns to the original data frame
+  Mat <- cbind(Mat, one_hot_df)
+  
+  # Remove the original column
+  Mat[[col]] <- NULL
+}
+
+# View the first few rows of the processed data to verify
+head(Mat)
+
+```
+```{r}
+cor_matrix <- cor(Mat, use = "complete.obs")
+```
+```{r}
+corrplot(cor_matrix, method = "circle")
+```
+```{r}
+plot_ly(
+  x = colnames(cor_matrix),
+  y = rownames(cor_matrix),
+  z = cor_matrix,
+  type = "heatmap",
+  colorscale = "Viridis"
+) %>%
+  layout(title_text = "Correlation Matrix Heatmap")
+
+```
+```{r}
+G3_correlation <- cor_matrix[,'G3']
+library(plotly)
+
+plot_ly(x = names(G3_correlation), y = G3_correlation, type = 'bar') %>%
+  layout(title = "Correlation of G3 with Other Variables", yaxis = list(title = "Correlation Coefficient"))
+
+```
+```{r}
+print(G3_correlation)
+```
+```{r}
+# Sorting correlations in decreasing order to get top positive correlations
+top_positive <- sort(G3_correlation, decreasing = TRUE)[1:10]
+
+# Sorting correlations in increasing order to get top negative correlations
+top_negative <- sort(G3_correlation)[1:10]
+
+print("Top Positive Correlations:")
+print(top_positive)
+
+print("Top Negative Correlations:")
+print(top_negative)
+
+```
+```{r}
+# Sort G3_correlation in increasing order
+sorted_names <- names(sort(G3_correlation))
+
+# Convert variable names to a factor with levels specified by the sorted order
+factor_names <- factor(names(G3_correlation), levels = sorted_names)
+
+# Plot using plotly
+plot_ly(x = factor_names, y = G3_correlation, type = 'bar') %>%
+  layout(title = "Correlation of G3 with Other Variables in Increasing Order", 
+         yaxis = list(title = "Correlation Coefficient"))
+
+
+```
+
+```{r Alc_consumtion}
+Mat_alc <- Mat
+
+```
+
+```{r}
+Mat_alc$Avg_alc <- (Mat_alc$Dalc + Mat_alc$Walc)/2
+```
+
+```{r}
+Mat_alc[,c("Avg_alc", "Dalc", "Walc")]
+```
+```{r}
+Mat_alc <- Mat_alc %>% select(-Dalc, -Walc)
+```
+```{r}
+Mat_alc
+```
+```{r}
+Mat_alc <- Mat_alc %>% select(-G1, -G2,-G3)
+```
+
+```{r}
+corr_mat = cor(Mat_alc)
+corrplot(corr_mat)
+```
+
+```{r}
+Avg_alc_correlation <- corr_mat[,'Avg_alc']
+
+
+plot_ly(x = names(Avg_alc_correlation), y = Avg_alc_correlation, type = 'bar') %>%
+  layout(title = "Correlation of Avg_alc with Other Variables", yaxis = list(title = "Correlation Coefficient"))
+```
+
+```{r}
+
+sorted_names <- names(sort(Avg_alc_correlation))
+
+
+factor_names <- factor(names(Avg_alc_correlation), levels = sorted_names)
+
+plot_ly(x = factor_names, y = Avg_alc_correlation, type = 'bar') %>%
+  layout(title = "Correlation of Avg_alc with Other Variables in Increasing Order", 
+         yaxis = list(title = "Correlation Coefficient"))
+
+```
+
+```{r}
+Avg_alc_correlation
+```
+
+```{r}
+Mat_alc
+```
+
+```{r}
+# Assuming your data is in a variable named 'Mat_alc'
+
+
+
+# 2. Split the data into training and testing sets
+set.seed(123) # Setting seed for reproducibility
+split = sample.split(Mat_alc$Avg_alc, SplitRatio = 0.8)
+train_data = subset(Mat_alc, split == TRUE)
+test_data = subset(Mat_alc, split == FALSE)
+
+# 3. Train a linear regression model using the training set
+model <- lm(Avg_alc ~ ., data = train_data)  # The dot means we are using all other columns as predictors
+
+# 4. Evaluate the model using the testing set
+predictions = predict(model, newdata = test_data)
+mse = mean((predictions - test_data$Avg_alc)^2)  # Mean Squared Error
+
+print(mse)
+
+# Additionally, you can print a summary of the model to inspect coefficients and other statistics
+print(summary(model))
+
+```
+
+
+
+```{r}
+# Removing redudant variables for 1-hot encoding 
+Mat_alc <- Mat_alc %>% select(-guardianother, -reasonreputation, -Fjobteacher, -Mjobteacher)
+```
+
+
+```{r}
+set.seed(123) 
+split = sample.split(Mat_alc$Avg_alc, SplitRatio = 0.8)
+train_data = subset(Mat_alc, split == TRUE)
+test_data = subset(Mat_alc, split == FALSE)
+
+
+model <- lm(Avg_alc ~ ., data = train_data)   
+
+predictions = predict(model, newdata = test_data)
+mse = mean((predictions - test_data$Avg_alc)^2)  
+
+print(mse)
+
+
+print(summary(model))
+```
+```{r}
+
+vif_model <- vif(model)  
+print(vif_model)
+```
+```{r}
+vif_model[vif_model >= 5]
+```
+Dropping Fjobother because the VIF value > 5
+Generally, 
+* 1 = not correlated.
+* Between 1 and 5 = moderately correlated.
+* Greater than 5 = highly correlated.
+
+```{r}
+vif_model[vif_model > 3 & vif_model < 5]
+```
+```{r}
+vif_model[vif_model <=1]
+```
+
+
+
+```{r}
+Mat_alc <- Mat_alc %>% select(-Fjobother)
+```
+
+```{r}
+set.seed(123) 
+split = sample.split(Mat_alc$Avg_alc, SplitRatio = 0.8)
+train_data = subset(Mat_alc, split == TRUE)
+test_data = subset(Mat_alc, split == FALSE)
+
+
+model <- lm(Avg_alc ~ ., data = train_data)   
+
+predictions = predict(model, newdata = test_data)
+mse = mean((predictions - test_data$Avg_alc)^2)  
+
+print(mse)
+
+
+print(summary(model))
+```
+
+Important Features based on the Significance codes
+sex, address, traveltime, paid, activities, nursery, famrel, goout, health, Fjobservices
+
+```{r}
+model_summary <- summary(model)
+estimates <- model_summary$coefficients[, "Estimate"]
+ordered_estimates_desc <- estimates[order(-estimates)]
+print(ordered_estimates_desc)
+
+```
+
+
+```{r}
+library(ggplot2)
+
+# Convert ordered estimates to a data frame
+df_estimates <- data.frame(Predictor = names(ordered_estimates_desc),
+                           Estimate = ordered_estimates_desc)
+
+# Plot using ggplot2
+plot <- ggplot(df_estimates, aes(x = reorder(Predictor, Estimate), y = Estimate)) +
+  geom_bar(stat = "identity", fill = "lightblue") +
+  coord_flip() + 
+  labs(title = "Ordered Estimates from the Model",
+       x = "Predictors",
+       y = "Coefficient Value") +
+  theme_minimal()
+
+plot
+
+```
+

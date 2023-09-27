@@ -1,0 +1,1427 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(dplyr)
+library(tidyverse)
+library(tidyr)
+library(plotly)
+library(ggplot2)
+library(coefplot)
+library(corrplot)
+library(plotly)
+library(caTools)
+library(Metrics)
+```
+
+```{r}
+mathData = read.csv('studentMat.csv')
+porData = read.csv('studentPor.csv')
+```
+
+#EDA
+
+school - student’s school (binary: ‘GP’ - Gabriel Pereira or ‘MS’ - Mousinho da Silveira) 
+2. sex - student’s sex (binary: ‘F’ - female or ‘M’ - male) 
+3. age - student’s age (numeric: from 15 to 22) 
+4. address - student’s home address type (binary: ‘U’ - urban or ‘R’ - rural) 
+5. famsize - family size (binary: ‘LE3’ - less or equal to 3 or ‘GT3’ - greater than 3) 
+6. Pstatus - parent’s cohabitation status (binary: ‘T’ - living together or ‘A’ - apart) 
+7. Medu - mother’s education (numeric: 0 - none, 1 - primary education (4th grade), 2 – 5th to 9th grade, 3 – secondary education or 4 – higher education)
+8. Fedu - father’s education (numeric: 0 - none, 1 - primary education (4th grade), 2 – 5th to 9th grade, 3 – secondary education or 4 – higher education)
+9. Mjob - mother’s job (nominal: ‘teacher’, ‘health’ care related, civil ‘services’ (e.g. administrative or police), ‘at_home’ or ‘other’)
+10. Fjob - father’s job (nominal: ‘teacher’, ‘health’ care related, civil ‘services’ (e.g. administrative or police), ‘at_home’ or ‘other’)
+11. reason - reason to choose this school (nominal: close to ‘home’, school ‘reputation’, ‘course’ preference or ‘other’)
+12. guardian - student’s guardian (nominal: ‘mother’, ‘father’ or ‘other’) 
+13. traveltime - home to school travel time (numeric: 1 - 1 hour) 
+14. studytime - weekly study time (numeric: 1 - 10 hours) 
+15. failures - number of past class failures (numeric: n if 1<=n<3, else 4) 
+16. schoolsup - extra educational support (binary: yes or no) 
+17. famsup - family educational support (binary: yes or no) 
+18. paid - extra paid classes within the course subject (Math or Portuguese) (binary: yes or no)
+19. activities - extra-curricular activities (binary: yes or no)
+20. nursery - attended nursery school (binary: yes or no)
+higher - wants to take higher education (binary: yes or no) 
+22. internet - Internet access at home (binary: yes or no) 
+23. romantic - with a romantic relationship (binary: yes or no) 
+24. famrel - quality of family relationships (numeric: from 1 - very bad to 5 - excellent) 
+25. freetime - free time after school (numeric: from 1 - very low to 5 - very high) 
+26. goout - going out with friends (numeric: from 1 - very low to 5 - very high) 
+27. Dalc - workday alcohol consumption (numeric: from 1 - very low to 5 - very high) 
+28. Walc - weekend alcohol consumption (numeric: from 1 - very low to 5 - very high) 
+29. health - current health status (numeric: from 1 - very bad to 5 - very good)
+30. absences - number of school absences (numeric: from 0 to 93
+
+```{r}
+mathData
+```
+
+```{r}
+porData
+
+```
+
+## Creating Plots for our datasets
+
+```{r}
+ggplot(porData, aes(x = school)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " Which school are they",
+    x = "School",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+
+### Gabriel Pereira
+
+### Mousinho da Silveira
+```{r}
+ggplot(mathData, aes(x = school)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " Which school are they",
+    x = "School",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+
+```{r}
+ggplot(porData, aes(x = sex)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = "Count of Males and Females ",
+    x = "Sex",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+
+```{r}
+ggplot(mathData, aes(x = sex)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Count of Males and Females ",
+    x = "Sex",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+
+```{r}
+ggplot(porData, aes(x = as.factor(age))) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = "Count of Students by Age",
+    x = "Age",
+    y = "Count"
+  ) + stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +
+  theme_minimal()
+```
+
+```{r}
+ggplot(mathData, aes(x = as.factor(age))) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Count of Students by Age",
+    x = "Age",
+    y = "Count"
+  ) + stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +
+  theme_minimal()
+```
+
+```{r}
+boxplot(porData$age, horizontal=TRUE, main="Horizontal Box Plot of Data", xlab="Value", col="#FF6666")
+```
+
+```{r}
+boxplot(mathData$age, horizontal=TRUE, main="Horizontal Box Plot of Data", xlab="Value", col="skyblue")
+```
+
+```{r}
+ggplot(porData, aes(x = address)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " By where does student live",
+    x = "Area",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+```{r}
+ggplot(mathData, aes(x = address)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " By where does student live",
+    x = "Area",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+
+```{r}
+ggplot(porData, aes(x = famsize)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " By family size ",
+    x = "No of people",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+### Greater than 3
+
+### Less than 3
+
+```{r}
+ggplot(mathData, aes(x = famsize)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " By family size ",
+    x = "No of people",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+```{r}
+ggplot(porData, aes(x = Pstatus)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " Parents living status ",
+    x = "Status",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+### Apart
+
+### Together
+
+```{r}
+ggplot(mathData, aes(x = Pstatus)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " Parents living status ",
+    x = "Status",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+
+```{r}
+ggplot(porData, aes(x = factor(Medu))) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = "Mother's Education",
+    x = "Education",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+
+### mother's education (numeric: 0 - none, 1 - primary education (4th grade), 2 -- 5th to 9th grade, 3 -- secondary education or 4 -- higher education)
+
+
+```{r}
+ggplot(mathData, aes(x = factor(Medu))) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Mother's Education",
+    x = "Education",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+
+
+```{r}
+ggplot(porData, aes(x = factor(Fedu))) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = "Father's Education",
+    x = "Education",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+
+### father's education (numeric: 0 - none, 1 - primary education (4th grade), 2 -- 5th to 9th grade, 3 -- secondary education or 4 -- higher education)
+```{r}
+ggplot(mathData, aes(x = factor(Fedu))) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Father's Education",
+    x = "Education",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+
+```{r}
+ggplot(porData, aes(x = Mjob)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = "Mother's Job",
+    x = "Job",
+    y = "Count"
+  ) +
+  theme_minimal()+
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+```{r}
+ggplot(mathData, aes(x = Mjob)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Mother's Job",
+    x = "Job",
+    y = "Count"
+  ) +
+  theme_minimal()+
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+
+```{r}
+ggplot(porData, aes(x = Fjob)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = "Father's Job",
+    x = "Job",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+```{r}
+ggplot(mathData, aes(x = Fjob)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Father's Job",
+    x = "Job",
+    y = "Count"
+  ) +
+  theme_minimal() +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+
+```{r}
+ggplot(porData, aes(x = reason)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = "Reason to select the school",
+    x = "Reason",
+    y = "Count"
+  ) +
+  theme_minimal()+
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+```{r}
+ggplot(mathData, aes(x = reason)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Reason to select the school",
+    x = "Reason",
+    y = "Count"
+  ) +
+  theme_minimal()+
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+
+
+```{r}
+ggplot(porData, aes(x = guardian)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = "Guardians",
+    x = "Gaurdian",
+    y = "Count"
+  ) +
+  theme_minimal()+
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+```{r}
+ggplot(mathData, aes(x = guardian)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Guardians",
+    x = "Gaurdian",
+    y = "Count"
+  ) +
+  theme_minimal()+
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+
+```{r}
+ggplot(porData, aes(x = traveltime)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = "Traveltime for schools by hour",
+    x = "Traveltime",
+    y = "Count"
+  ) +
+  theme_minimal()+
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+```{r}
+ggplot(mathData, aes(x = traveltime)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Traveltime for schools by hour",
+    x = "Traveltime",
+    y = "Count"
+  ) +
+  theme_minimal()+
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+
+```{r}
+ggplot(porData, aes(x = studytime)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = "Study preparation by hours",
+    x = "studytime",
+    y = "Count"
+  ) +
+  theme_minimal()+
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+```{r}
+ggplot(mathData, aes(x = studytime)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Study preparation by hours",
+    x = "studytime",
+    y = "Count"
+  ) +
+  theme_minimal()+
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+
+```{r}
+ggplot(porData, aes(x = failures)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = "Failures in past",
+    x = "Failure",
+    y = "Count"
+  ) +
+  theme_minimal()+
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+```{r}
+ggplot(mathData, aes(x = failures)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Failures in past",
+    x = "Failure",
+    y = "Count"
+  ) +
+  theme_minimal()+
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5)
+```
+
+
+```{r}
+ggplot(porData, aes(x = schoolsup)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " School support ",
+    x = "support",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+```{r}
+ggplot(mathData, aes(x = schoolsup)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " School support ",
+    x = "support",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+```{r}
+ggplot(porData, aes(x = famsup)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " family support ",
+    x = "support",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+```{r}
+ggplot(mathData, aes(x = famsup)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " family support ",
+    x = "support",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+```{r}
+ggplot(porData, aes(x = paid)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " Are they gng for extra paid classes ",
+    x = "Paid classes",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+
+```{r}
+ggplot(mathData, aes(x = paid)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " Are they gng for extra paid classes ",
+    x = "Paid classes",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+
+
+```{r}
+ggplot(porData, aes(x = activities)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " Extracurricular activities",
+    x = "Extra",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +
+  theme_minimal()
+```
+```{r}
+ggplot(mathData, aes(x = activities)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " Extracurricular activities",
+    x = "Extra",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +
+  theme_minimal()
+```
+
+```{r}
+ggplot(porData, aes(x = nursery)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " Attended nursery school or not ",
+    x = "Nursery",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+```{r}
+ggplot(mathData, aes(x = nursery)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " Attended nursery school or not ",
+    x = "Nursery",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+
+```{r}
+ggplot(porData, aes(x = higher)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " Are they planning on taking higher studies",
+    x = "Higher studies",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+```{r}
+ggplot(mathData, aes(x = higher)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " Are they planning on taking higher studies",
+    x = "Higher studies",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+```{r}
+ggplot(porData, aes(x = internet)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = "Internet acess at home",
+    x = "Internet",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+```{r}
+ggplot(mathData, aes(x = internet)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = "Internet acess at home",
+    x = "Internet",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+```{r}
+ggplot(porData, aes(x = romantic)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " Are they in romantic relationship ",
+    x = "Relationship",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+```{r}
+ggplot(mathData, aes(x = romantic)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " Are they in romantic relationship ",
+    x = "Relationship",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+
+```{r}
+ggplot(porData, aes(x = famrel)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " Family Relationship ",
+    x = "Famrel",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+```{r}
+ggplot(mathData, aes(x = famrel)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " Family Relationship ",
+    x = "Famrel",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+
+## Bad to Excellent
+
+```{r}
+ggplot(porData, aes(x = freetime)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " How much freetime ",
+    x = "Free time",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+```{r}
+ggplot(mathData, aes(x = freetime)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " How much freetime ",
+    x = "Free time",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+## Low to high
+
+```{r}
+ggplot(porData, aes(x = goout)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " Are they gng out with frnds ",
+    x = "gng out with frnds",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+```{r}
+ggplot(mathData, aes(x = goout)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " Are they gng out with frnds ",
+    x = "gng out with frnds",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+## Low to high
+
+```{r}
+ggplot(porData, aes(x = Dalc)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " Workday alc consump ",
+    x = "Drinking alc",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+```{r}
+ggplot(mathData, aes(x = Dalc)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " Workday alc consump ",
+    x = "Drinking alc",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+## Low to high
+
+```{r}
+ggplot(porData, aes(x = Walc)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " Weekend alc consump ",
+    x = "Drinking alc",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+```{r}
+ggplot(mathData, aes(x = Walc)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " Weekend alc consump ",
+    x = "Drinking alc",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+## Low to high
+
+```{r}
+ggplot(porData, aes(x = health)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " Health Status ",
+    x = "Health",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+```{r}
+ggplot(mathData, aes(x = health)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " Health Status ",
+    x = "Health",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) + 
+  theme_minimal()
+```
+
+## Bad to Good
+
+```{r}
+ggplot(porData, aes(x = absences)) +
+  geom_bar(fill = "#FF6666") +
+  labs(
+    title = " Absent days ",
+    x = "No of days",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+
+```{r}
+ggplot(mathData, aes(x = absences)) +
+  geom_bar(fill = "skyblue") +
+  labs(
+    title = " Absent days ",
+    x = "No of days",
+    y = "Count"
+  ) +
+  stat_count(geom = "text", aes(label = ..count..), vjust = -0.5) +  
+  theme_minimal()
+```
+
+# Data Preprocessing
+
+Separating Numeric and Non numeric Data
+
+```{r Separating Numeric and Non numeric Data}
+non_numeric_columns <- names(porData)[sapply(porData, function(col) !is.numeric(col))]
+cat("These are non-numeric columns:", non_numeric_columns, "\n\n")
+
+numeric_columns <- names(porData)[sapply(porData, is.numeric)]
+cat("These are numeric columns:", numeric_columns, "\n")
+```
+
+Checking all the unique values that a non Numeric feature has
+
+```{r Checking all the unique values that a non Numeric feature has}
+non_numeric <- names(porData)[sapply(porData, function(col) !is.numeric(col))]
+
+for (col in non_numeric){
+  print(paste("The column ", col, "has ", length(unique(porData[[col]])), ' unique values they are: '))
+  print((unique(porData[[col]])))
+  cat('\n')
+}
+```
+
+Separating Binary & Multiple unique values within features
+
+```{r Separating Binary & Multiple unique values within features}
+binary_columns <- c()
+multi_unique_columns <- c()
+
+
+for (col in non_numeric) {
+    num_unique <- length(unique(porData[[col]]))
+    
+    if (num_unique == 2) {
+        binary_columns <- c(binary_columns, col)
+    } else if (num_unique > 2) {
+        multi_unique_columns <- c(multi_unique_columns, col)
+    }
+}
+
+
+print(paste("Binary columns:", paste(binary_columns, collapse = ", ")))
+cat('\n')
+print(paste("Multi unique value columns:", paste(multi_unique_columns, collapse = ", ")))
+
+```
+
+```{r}
+
+```
+
+Turing binary unique values into numeric
+
+If a features has value 'yes' it's encoded as 1, 'no' as 0. Rest all shown below.
+
+```{r Turing binary unique values into numeric}
+cat('----Portugese Data----\n\n')
+for (col in binary_columns) {
+  if ("yes" %in% porData[[col]] && "no" %in% porData[[col]]) {
+   
+    porData[[col]] <- ifelse(porData[[col]] == "yes", 1, 0)
+    
+  } else {
+    
+    unique_vals <- unique(porData[[col]])
+    porData[[col]] <- ifelse(porData[[col]] == unique_vals[1], 0, 1)
+    print(paste("Portugese's Feature:",col, ' is encoded ', unique_vals[1],' as 0 ', unique_vals[2],' as 1'))
+  }
+}
+cat('\n----Math Data----\n\n')
+# Doing for Math data too
+for (col in binary_columns) {
+  if ("yes" %in% mathData[[col]] && "no" %in% mathData[[col]]) {
+   
+    mathData[[col]] <- ifelse(mathData[[col]] == "yes", 1, 0)
+    
+  } else {
+    
+    unique_vals <- unique(mathData[[col]])
+    mathData[[col]] <- ifelse(mathData[[col]] == unique_vals[1], 0, 1)
+    print(paste("Math's Feature:",col, ' is encoded ', unique_vals[1],' as 0 ', unique_vals[2],' as 1'))
+  }
+}
+```
+
+Performing 1-hot encoding for Multivalued columns
+
+```{r Turing multivalued columns numeric}
+cat('----Portugese Data----\n\n')
+for (col in multi_unique_columns) {
+  
+  formula_str <- paste("~ 0 +", col)
+  one_hot <- model.matrix(as.formula(formula_str), data = porData)
+  
+  
+  one_hot_df <- as.data.frame(one_hot)
+  colnames(one_hot_df) <- gsub("^.\\.", col, colnames(one_hot_df))
+  
+  
+  porData <- cbind(porData, one_hot_df)
+  
+  
+  porData[[col]] <- NULL
+}
+head(porData)
+cat('\n----Math Data----\n\n')
+# for Math data
+for (col in multi_unique_columns) {
+
+  formula_str <- paste("~ 0 +", col)
+  one_hot <- model.matrix(as.formula(formula_str), data = mathData)
+
+
+  one_hot_df <- as.data.frame(one_hot)
+  colnames(one_hot_df) <- gsub("^.\\.", col, colnames(one_hot_df))
+
+
+  mathData <- cbind(mathData, one_hot_df)
+
+
+  mathData[[col]] <- NULL
+}
+head(mathData)
+```
+
+## What determines student success in school measured by their test scores
+
+We'll Focus only on Grade 3(G3) which is the final Grade
+
+Mothers education or Fathers education
+
+Fathers Education
+
+```{r Fathers Education}
+
+#Por's Model
+modelPor_Fedu <- lm(G3 ~ Fedu, data = porData)
+summary(modelPor_Fedu)
+plot(porData$Fedu, porData$G3, main="Fathers's Education (Fedu) vs. Final Grade (G3) for Portuguese Data", xlab="Father's Education", ylab="Final Grade (G3)")
+abline(modelPor_Fedu, col="red")
+
+
+
+#Math's Model
+modelMath_Fedu <- lm(G3 ~ Fedu, data = mathData)
+summary(modelMath_Fedu)
+plot(mathData$Fedu, mathData$G3, main="Fathers's Education (Fedu) vs. Final Grade (G3) for Math Data", xlab="Father's Education", ylab="Final Grade (G3)")
+abline(modelMath_Fedu, col="red")
+```
+
+Mothers Education
+
+```{r }
+modelPor_Medu <- lm(G3 ~ Medu, data = porData)
+summary(modelPor_Medu)
+plot(porData$Medu, porData$G3, main="Mother's Education (Medu) vs. Final Grade (G3) for Portuguese Data", xlab="Mother's Education", ylab="Final Grade (G3)")
+abline(modelPor_Medu, col="red")
+
+
+#Math's Model
+modelMath_Medu <- lm(G3 ~ Medu, data = mathData)
+summary(modelMath_Medu)
+plot(mathData$Medu, mathData$G3, main="Mother's Education (Medu) vs. Final Grade (G3) for Math Data ", xlab="Mother's Education", ylab="Final Grade (G3)")
+abline(modelMath_Medu, col="red")
+```
+
+Let's look Combination of Both Mother's and Father's Education impact on your test scores
+
+```{r}
+modelPor_Edu <- lm(G3 ~ Medu + Fedu , data = porData)
+summary(modelPor_Edu)
+coefplot(modelPor_Edu)
+
+modelMath_Edu <- lm(G3 ~ Medu + Fedu , data = mathData)
+summary(modelMath_Edu)
+coefplot(modelMath_Edu)
+```
+
+Does spending more time on studying actually improves grades
+
+```{r}
+modelPor_Study = lm(G3 ~ studytime, data=porData)
+summary(modelPor_Study)
+plot(porData$studytime, porData$G3, main="Study Time (studytime) vs. Final Grade (G3) for Portuguese Data", xlab="Study time", ylab="Final Grade (G3)")
+abline(modelPor_Study, col="red")
+
+modelMath_Study <- lm(G3 ~ studytime, data=mathData)
+summary(modelMath_Study)
+plot(mathData$studytime, mathData$G3, main="Study Time (studytime) vs. Final Grade (G3) for Math Data", xlab="Study time", ylab="Final Grade (G3)")
+abline(modelMath_Study, col="red")
+
+
+
+```
+
+Problem with above data is data is ordinal and range is limited How to deal with ordinal data in Regression: <https://stats.stackexchange.com/questions/164689/ordinal-data-in-regression>
+
+absences - number of school absences (numeric: from 0 to 93)
+
+```{r Absences}
+modelPor_Absences <- lm(G3 ~ absences, data=porData)
+summary(modelPor_Absences)
+plot(porData$absences, porData$G3, main="Absences vs. Final Grade (G3) for Portuguese Data", xlab="Number of Absences", ylab="Final Grade (G3)")
+abline(modelPor_Absences, col="red")
+
+modelMath_Absences <- lm(G3 ~ absences, data=mathData)
+summary(modelMath_Absences)
+plot(mathData$absences, mathData$G3, main="Absences vs. Final Grade (G3) for Math Data", xlab="Number of Absences", ylab="Final Grade (G3)")
+abline(modelMath_Absences, col="red")
+
+multiplot(modelPor_Absences, modelMath_Absences, names=c("Portuguese Model", "Math Model"))
+
+
+```
+
+#### Alcohol Consumption
+
+Daily Alcohol Consumption
+
+```{r Daily Alc}
+
+modelPor_Dalc <- lm(G3 ~ Dalc, data=porData)
+summary(modelPor_Dalc)
+plot(porData$Dalc, porData$G3, main="Workday Alcohol Consumption (Dalc) vs. Final Grade (G3) for Portuguese Data", xlab="Dalc", ylab="Final Grade (G3)")
+abline(modelPor_Dalc, col="red")
+
+modelMath_Dalc <- lm(G3 ~ Dalc, data=mathData)
+summary(modelMath_Dalc)
+plot(mathData$Dalc, mathData$G3, main="Workday Alcohol Consumption (Dalc) vs. Final Grade (G3) for Math Data", xlab="Dalc", ylab="Final Grade (G3)")
+abline(modelMath_Dalc, col="red")
+
+multiplot(modelPor_Dalc,modelMath_Dalc, names=c('Daily Alc consumption for Portuguese Data', 'Daily Alc consumption for Math Data'))
+
+```
+
+Weekly Alcohol consumption
+
+```{r}
+
+modelPor_Walc <- lm(G3 ~ Walc, data=porData)
+summary(modelPor_Walc)
+plot(porData$Walc, porData$G3, main="Weekend Alcohol Consumption (Walc) vs. Final Grade (G3) for Portuguese Data", xlab="Walc", ylab="Final Grade (G3)")
+abline(modelPor_Walc, col="red")
+
+modelMath_Walc <- lm(G3 ~ Walc, data=mathData)
+summary(modelMath_Walc)
+plot(mathData$Walc, mathData$G3, main="Weekend Alcohol Consumption (Walc) vs. Final Grade (G3) for Math Data", xlab="Walc", ylab="Final Grade (G3)")
+abline(modelMath_Walc, col="red")
+
+multiplot(modelPor_Walc,modelMath_Walc, names=c('Weekly Alc consumption for Portuguese Data', 'Weekly Alc consumption for Math Data'))
+
+```
+
+Overview of all coeff's till now
+
+```{r}
+multiplot(modelPor_Dalc,modelMath_Dalc,modelPor_Walc,modelMath_Walc, names=c('Daily Alc consumption for Portuguese Data', 'Daily Alc consumption for Math Data','Weekly Alc consumption for Portuguese Data', 'Weekly Alc consumption for Math Data'))
+```
+
+```{r}
+
+modelPor_Multi <- lm(G3 ~ Medu + Fedu + studytime + Dalc + Walc , data = porData)
+summary(modelPor_Multi)
+coefplot(modelPor_Multi, title ='Coefficient Plot for modelPor_Multi model')
+
+modelMath_Multi <- lm(G3 ~ Medu + Fedu + studytime + Dalc + Walc , data = mathData)
+summary(modelMath_Multi)
+coefplot(modelMath_Multi,title ='Coefficient Plot for modelMath_Multi model')
+
+```
+
+####Let's do Correlation Matrix \#### Correlation is not causation!!!!
+
+```{r}
+corMath <- cor(mathData)
+corrplot(corMath)
+
+corPor <- cor(porData)
+corrplot(corPor)
+```
+
+Let's focus only on G3
+
+```{r}
+G3Por_cor <- corPor[,'G3']
+plot_ly(x = names(G3Por_cor), y = G3Por_cor, type = 'bar') %>%
+  layout(title = "Correlation of Final Grade(G3) with Other Variables for Portuguese Data", yaxis = list(title = "Correlation Coefficient"))
+
+
+G3Math_cor <- corMath[,'G3']
+plot_ly(x = names(G3Math_cor), y = G3Math_cor, type = 'bar') %>%
+  layout(title = "Correlation of Final Grade(G3) with Other Variables for Math Data", yaxis = list(title = "Correlation Coefficient"))
+```
+
+```{r}
+sorted_names <- names(sort(G3Por_cor))
+factor_names <- factor(names(G3Por_cor), levels = sorted_names)
+
+
+plot_ly(x = factor_names, y = G3Por_cor, type = 'bar') %>%
+  layout(title = "Correlation of G3 with Other Variables in Increasing Order for Portuguese Data", 
+         yaxis = list(title = "Correlation Coefficient"))
+# For Math Data
+sorted_names <- names(sort(G3Math_cor))
+factor_names <- factor(names(G3Math_cor), levels = sorted_names)
+
+
+plot_ly(x = factor_names, y = G3Math_cor, type = 'bar') %>%
+  layout(title = "Correlation of G3 with Other Variables in Increasing Order for Math Data", 
+         yaxis = list(title = "Correlation Coefficient"))
+```
+
+Dropping G1,G2
+
+```{r}
+mathData <- mathData %>% select(-G1, -G2)
+porData <- porData %>% select(-G1, -G2)
+
+G3Por_cor <-  cor(porData)[,'G3']
+G3Math_cor <-  cor(mathData)[,'G3']
+  
+sorted_names <- names(sort(G3Por_cor))
+factor_names <- factor(names(G3Por_cor), levels = sorted_names)
+
+
+plot_ly(x = factor_names, y = G3Por_cor, type = 'bar') %>%
+  layout(title = "Correlation of G3 with Other Variables in Increasing Order for Portuguese Data", 
+         yaxis = list(title = "Correlation Coefficient"))
+# For Math Data
+sorted_names <- names(sort(G3Math_cor))
+factor_names <- factor(names(G3Math_cor), levels = sorted_names)
+
+
+plot_ly(x = factor_names, y = G3Math_cor, type = 'bar') %>%
+  layout(title = "Correlation of G3 with Other Variables in Increasing Order for Math Data", 
+         yaxis = list(title = "Correlation Coefficient"))
+  
+
+```
+
+Let's Include all of the features and build a linear regression model for 2 datasets:
+
+```{r}
+set.seed(123)
+cat('\n\n--------------For Portuguese Data--------------\n\n')
+split = sample.split(porData$G3, SplitRatio = 0.8)
+train_data = subset(porData, split == TRUE)
+test_data = subset(porData, split == FALSE)
+
+
+model <- lm(G3 ~ ., data = train_data)  
+print(summary(model))
+
+
+# for Math Data
+cat('\n\n--------------For Math Data--------------\n\n')
+split = sample.split(mathData$G3, SplitRatio = 0.8)
+train_data = subset(mathData, split == TRUE)
+test_data = subset(mathData, split == FALSE)
+
+
+modelMath <- lm(G3 ~ ., data = train_data)  
+print(summary(modelMath))
+```
+
+Dropping additional Features
+
+```{r}
+porData <- porData %>% select(-Mjobteacher, -Fjobteacher,-reasonreputation,-guardianother)
+mathData <- mathData %>% select(-Mjobteacher, -Fjobteacher,-reasonreputation,-guardianother)
+```
+
+```{r}
+set.seed(123)
+
+# For Portuguese Data
+cat('\n\n--------------For Portuguese Data--------------\n\n')
+split = sample.split(porData$G3, SplitRatio = 0.8)
+train_data = subset(porData, split == TRUE)
+test_data = subset(porData, split == FALSE)
+
+model <- lm(G3 ~ ., data = train_data)  
+print(summary(model))
+
+# Compute RMSE for Portuguese Data
+predicted_values <- predict(model, newdata = test_data)
+actual_values <- test_data$G3
+rmse_por <- rmse(actual_values, predicted_values)
+cat('RMSE for Portuguese Data:', rmse_por, '\n')
+
+
+# For Math Data
+cat('\n\n--------------For Math Data--------------\n\n')
+split = sample.split(mathData$G3, SplitRatio = 0.8)
+train_data = subset(mathData, split == TRUE)
+test_data = subset(mathData, split == FALSE)
+
+modelMath <- lm(G3 ~ ., data = train_data)  
+print(summary(modelMath))
+
+# Compute RMSE for Math Data
+predicted_values_math <- predict(modelMath, newdata = test_data)
+actual_values_math <- test_data$G3
+rmse_math <- rmse(actual_values_math, predicted_values_math)
+cat('RMSE for Math Data:', rmse_math, '\n')
+
+```
+
+```{r}
+coefplot(model, title = 'Coefficient Plot for Portuguese Data')
+coefplot(modelMath, title = 'Coefficient Plot for Math Data')
+```
+
+Ordered Coeff
+
+```{r}
+coefficients <- coef(model)
+sorted_coefficients <- coefficients[order(abs(coefficients), decreasing = TRUE)]
+coefplot(model,title='Coefficient Plot for Portuguese Data',  sort = "magnitude")
+
+
+coefficientsMath <- coef(modelMath)
+sorted_coefficientsMath <- coefficientsMath[order(abs(coefficientsMath), decreasing = TRUE)]
+coefplot(modelMath,title='Coefficient Plot for Math Data',  sort = "magnitude")
+
+```
+
+```{r}
+sorted_names <- names(sort(sorted_coefficients))
+factor_names <- factor(names(sorted_coefficients), levels = sorted_names)
+plot_ly(x = factor_names, y = sorted_coefficients, type = 'bar') %>%
+  layout(title = "Sorted Coefficients in Increasing Order for Portuguese Data", 
+         yaxis = list(title = "Coefficient Value"))
+
+# For math Data
+sorted_names <- names(sort(sorted_coefficientsMath))
+factor_names <- factor(names(sorted_coefficientsMath), levels = sorted_names)
+plot_ly(x = factor_names, y = sorted_coefficientsMath, type = 'bar') %>%
+  layout(title = "Sorted Coefficients in Increasing Order for Math Data", 
+         yaxis = list(title = "Coefficient Value"))
+
+```
+
+```{r Getting the Important features}
+important_features_Por <- c("school", "failures", "schoolsup", "higher", "sex", "studytime", "activities", "romantic", "health")
+
+important_features_Math <- c("sex", "studytime", "failures", "schoolsup", "famsup", "romantic", "goout", "absences", "Mjobhealth", "Mjobservices", "Fjobother", "Fjobservices")
+
+```
+
+```{r}
+set.seed(123)
+# Modeling for Portuguese Data
+formulaPor <- as.formula(paste("G3 ~", paste(important_features_Por, collapse=" + ")))
+model <- lm(formulaPor, data=porData)
+summary(model)
+
+coefficients <- coef(model)
+sorted_coefficients <- coefficients[order(abs(coefficients), decreasing = TRUE)]
+coefplot(model, title='Coefficient Plot for Portuguese Data',  sort = "magnitude")
+
+predicted_values <- predict(model, newdata = test_data)
+actual_values <- test_data$G3
+rmse_por <- rmse(actual_values, predicted_values)
+cat('RMSE for Portuguese Data:', rmse_por, '\n')
+
+# Modeling for Math Data
+formulaMath <- as.formula(paste("G3 ~", paste(important_features_Math, collapse=" + ")))
+modelMath <- lm(formulaMath, data=mathData)
+summary(modelMath)
+
+coefficientsMath <- coef(modelMath)
+sorted_coefficientsMath <- coefficientsMath[order(abs(coefficientsMath), decreasing = TRUE)]
+coefplot(modelMath, title='Coefficient Plot for Math Data',  sort = "magnitude")
+
+predicted_values_math <- predict(modelMath, newdata = test_data)
+actual_values_math <- test_data$G3
+rmse_math <- rmse(actual_values_math, predicted_values_math)
+cat('RMSE for Math Data:', rmse_math, '\n')
+
+```
+
+## Does alcohol consumption have a significant effect on student performance ?
+
+Adding a new column called 'Avg_alc' which is the Average between Weekday Alcohol consumption & Weekend Alcohol consumption.
+
+```{r}
+mathData$Avg_alc <- (mathData$Dalc + mathData$Walc)/2
+mathData <- mathData %>% select(-Dalc, -Walc)
+
+porData$Avg_alc <- (porData$Dalc + porData$Walc)/2
+porData <- porData %>% select(-Dalc, -Walc)
+```
+
+```{r}
+
+G3Por_cor <-  cor(porData)[,'G3']
+G3Math_cor <-  cor(mathData)[,'G3']
+  
+sorted_names <- names(sort(G3Por_cor))
+factor_names <- factor(names(G3Por_cor), levels = sorted_names)
+
+
+plot_ly(x = factor_names, y = G3Por_cor, type = 'bar') %>%
+  layout(title = "Correlation of G3 with Other Variables in Increasing Order for Portuguese Data", 
+         yaxis = list(title = "Correlation Coefficient"))
+# For Math Data
+sorted_names <- names(sort(G3Math_cor))
+factor_names <- factor(names(G3Math_cor), levels = sorted_names)
+
+
+plot_ly(x = factor_names, y = G3Math_cor, type = 'bar') %>%
+  layout(title = "Correlation of G3 with Other Variables in Increasing Order for Math Data", 
+         yaxis = list(title = "Correlation Coefficient"))
+
+```
+
+```{r}
+set.seed(123)
+
+# For Portuguese Data
+cat('\n\n--------------For Portuguese Data--------------\n\n')
+split = sample.split(porData$G3, SplitRatio = 0.8)
+train_data = subset(porData, split == TRUE)
+test_data = subset(porData, split == FALSE)
+
+model <- lm(G3 ~ ., data = train_data)  
+print(summary(model))
+
+# Compute RMSE for Portuguese Data
+predicted_values <- predict(model, newdata = test_data)
+actual_values <- test_data$G3
+rmse_por <- rmse(actual_values, predicted_values)
+cat('RMSE for Portuguese Data:', rmse_por, '\n')
+
+
+# For Math Data
+cat('\n\n--------------For Math Data--------------\n\n')
+split = sample.split(mathData$G3, SplitRatio = 0.8)
+train_data = subset(mathData, split == TRUE)
+test_data = subset(mathData, split == FALSE)
+
+modelMath <- lm(G3 ~ ., data = train_data)  
+print(summary(modelMath))
+
+# Compute RMSE for Math Data
+predicted_values_math <- predict(modelMath, newdata = test_data)
+actual_values_math <- test_data$G3
+rmse_math <- rmse(actual_values_math, predicted_values_math)
+cat('RMSE for Math Data:', rmse_math, '\n')
+```
+
+```{r}
+coefficients <- coef(model)
+sorted_coefficients <- coefficients[order(abs(coefficients), decreasing = TRUE)]
+sorted_names <- names(sort(sorted_coefficients))
+factor_names <- factor(names(sorted_coefficients), levels = sorted_names)
+plot_ly(x = factor_names, y = sorted_coefficients, type = 'bar') %>%
+  layout(title = "Sorted Coefficients in Increasing Order for Portuguese Data", 
+         yaxis = list(title = "Coefficient Value"))
+
+# For math Data
+coefficientsMath <- coef(modelMath)
+sorted_coefficientsMath <- coefficientsMath[order(abs(coefficientsMath), decreasing = TRUE)]
+sorted_names <- names(sort(sorted_coefficientsMath))
+factor_names <- factor(names(sorted_coefficientsMath), levels = sorted_names)
+plot_ly(x = factor_names, y = sorted_coefficientsMath, type = 'bar') %>%
+  layout(title = "Sorted Coefficients in Increasing Order for Math Data", 
+         yaxis = list(title = "Coefficient Value"))
+
+```
+
+```{r}
+combinedData <- rbind(mathData, porData)
+
+```
+
+```{r}
+View(combinedData)
+```
+
+```{r}
+corValues <- cor(combinedData)
+AlcAll_cor <-  cor(combinedData)[,'Avg_alc']
+  
+sorted_names <- names(sort(AlcAll_cor))
+factor_names <- factor(names(AlcAll_cor), levels = sorted_names)
+
+
+plot_ly(x = factor_names, y = AlcAll_cor, type = 'bar') %>%
+  layout(title = "Correlation of Avg_alc with Other Variables in Increasing Order for Combined data", 
+         yaxis = list(title = "Correlation Coefficient"))
+```
+
+```{r}
+cat('\n\n--------------For Combined Data--------------\n\n')
+split = sample.split(combinedData$Avg_alc, SplitRatio = 0.8)
+train_data = subset(combinedData, split == TRUE)
+test_data = subset(combinedData, split == FALSE)
+
+modelAll <- lm(Avg_alc ~ ., data = train_data)  
+print(summary(modelAll))
+
+
+predicted_values_math <- predict(modelAll, newdata = test_data)
+actual_values_math <- test_data$Avg_alc
+rmse_math <- rmse(actual_values_math, predicted_values_math)
+cat('RMSE for All Data for Alcohol Consumption:', rmse_math, '\n')
+```
+
+```{r}
+coefficients <- coef(modelAll)
+sorted_coefficients <- coefficients[order(abs(coefficients), decreasing = TRUE)]
+sorted_names <- names(sort(sorted_coefficients))
+factor_names <- factor(names(sorted_coefficients), levels = sorted_names)
+plot_ly(x = factor_names, y = sorted_coefficients, type = 'bar') %>%
+  layout(title = "Sorted Coefficients in Increasing Order for Alcohol Consumption for combined Data ", 
+         yaxis = list(title = "Coefficient Value"))
+```
