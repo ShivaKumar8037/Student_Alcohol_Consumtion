@@ -1,7 +1,7 @@
-# Impact of Alcohol Consumption on Academic Performance: An Empirical Analysis (Fall 2023)
+# Impact of Alcohol Consumption on Academic Performance: An Empirical Analysis 
 
 ## Overview
-This repository contains the empirical analysis undertaken as part of the E401/M518 course, specifically examining the influence of alcohol consumption on the academic results of Portuguese secondary school students using linear regression techniques.
+This repository contains the empirical analysis undertaken as part of the M518 course at Indiana University, specifically examining the influence of alcohol consumption on the academic results of Portuguese secondary school students using linear regression techniques.
 
 ## Dataset
 The primary data for this study is sourced from the [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/STUDENT+ALCOHOL+CONSUMPTION). It encompasses a wide range of student demographic details, their test scores, and patterns of alcohol consumption.
